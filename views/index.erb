@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		
+		<!-- This is index.erb. ERB (Embedded RuBy) is a feature of Ruby that enables you to conveniently generate any kind of text, in any quantity, from templates. You can find more about it here: http://www.stuartellis.eu/articles/erb/  -->
+		
+		<title>Little Bird Relay Demo</title>
+
+
+		<!-- First thing we're going to do is import the jQuery javascript library. Kindly hosted for us by Google. 
+
+		jQuery is a fast, small, and feature-rich JavaScript library. Our Boostrap Framework (below), the Bootstrap Switch library (below) needs jQuery and we're also going to use jQuery's Ajax features to send the state of our switches to the server when we flick the switches. This means we can control our relays without having to reload the web page. -->
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+		<!-- Below we're going to fetch the popular (and free) Bootstrap Framework.
+		Bootstrap is the most popular HTML, CSS, and JS framework for developing responsive, mobile first projects on the web.
+		You can find more about Bootstrap here: http://getbootstrap.com -->
+		
+
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+
+		<!-- 
+		Now we're going to bring into the Bootstrap Switch library. 
+		This library turns checkboxes and radio buttons into nice and pretty goggle switches
+		 -->
+		 <link rel="stylesheet" href="/css/bootstrap3/bootstrap-switch.min.css">
+		 <script src="/js/bootstrap-switch.min.js"></script>
+
+		 <style>
+		 body{padding:10px;} 
+		 .bootstrap-switch{margin:10px;}
+		 input{font-size:24px; width:400px;}
+		 </style>
+
+	</head>
+	<body>
+		<h1>Little Bird Relay Demo</h1>
+		<h2 class="h4">Relay 1</h2>
+		<input type="checkbox" name="relay1"><br>
+		<h2 class="h4">Relay 2</h2>
+		<input type="checkbox" name="relay2"><br>
+		<h2 class="h4">Relay 3</h2>
+		<input type="checkbox" name="relay3"><br>
+		<h2 class="h4">Relay 4</h2>
+		<input type="checkbox" name="relay4"><br>
+		<h2 class="h4">Credentials (saved to your local storage)</h2>
+		<p>Device ID <input type="text" class="credentials_fields" id="device_id_field" name="device_id" placeholder="Device ID"></p><br>
+		<p>Access Token <input type="text" class="credentials_fields" id="access_token_field" name="access_token_field" placeholder="Access Token"></p><br>
+
+		<script>
+			$("[name='relay1']").bootstrapSwitch();
+			$("[name='relay2']").bootstrapSwitch();
+			$("[name='relay3']").bootstrapSwitch();
+			$("[name='relay4']").bootstrapSwitch();
+
+			$('input[name="relay1"]').on('switchChange.bootstrapSwitch', function(event, state) {
+				set_relay(1,state)
+  				//console.log(this); // DOM element
+  				//console.log(event); // jQuery event
+  				console.log(state); // true | false
+			});
+
+			$('input[name="relay2"]').on('switchChange.bootstrapSwitch', function(event, state) {
+				set_relay(2,state)
+
+  				console.log(this); // DOM element
+  				console.log(event); // jQuery event
+  				console.log(state); // true | false
+			});
+
+			$('input[name="relay3"]').on('switchChange.bootstrapSwitch', function(event, state) {
+  				set_relay(3,state)
+
+  				console.log(this); // DOM element
+  				console.log(event); // jQuery event
+  				console.log(state); // true | false
+			});
+
+			$('input[name="relay4"]').on('switchChange.bootstrapSwitch', function(event, state) {
+  				set_relay(4,state)
+
+  				console.log(this); // DOM element
+  				console.log(event); // jQuery event
+  				console.log(state); // true | false
+			});
+
+
+			// This function will save our Particle Device ID and Token into your 
+			// browser's local storage so you don't have to keep entering the details in!
+			// This info is not stored on the server.
+
+			$( ".credentials_fields" ).change(function() {
+  				console.log( "Creds changed" );
+
+  				localStorage.device_id = $('#device_id_field').val();
+				localStorage.access_token =  $('#access_token_field').val();
+			});
+
+
+			// On that note, wouldn't be great if we load these saved Device ID and Token values in when we first load the page...
+			$( document ).ready(function() {
+				console.log( "Populating Device ID and Token")
+				$('#device_id_field').val(localStorage.device_id);
+				$('#access_token_field').val(localStorage.access_token);
+			});
+
+			// This function will send an AJAX request to our server, telling it the relay we want to set 
+			// and it's desired state.
+
+			function set_relay(relay, state){
+
+				// Whilst there are short hand ways of doing this, this is pretty 
+				// 
+				$.ajax({
+  					type: "POST", // We're sending a POST request. POST is one of many request methods supported by the HTTP protocol used by the World Wide Web. By design, the POST request method requests that a web server accepts and stores the data enclosed in the body of the request message.
+  					url: "/relay/" + relay, // This is the URL where we're sending our POST request
+  					data: JSON.stringify({ "state": state, "device_id":localStorage.device_id, "access_token":localStorage.access_token}),  // This is the JSON string we're sending. JSON stands for (JavaScript Object Notation) is a lightweight data-interchange format. It is easy for humans to read and write.
+  					dataType: "json" // We're telling the computer that we're sending JSON
+				});
+			}
+		</script>
+
+	</body>
+</html>
